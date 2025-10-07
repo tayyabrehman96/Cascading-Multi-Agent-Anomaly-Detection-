@@ -1,0 +1,100 @@
+# ============================
+# Default configuration (v0.1)
+# ============================
+
+# ---- Data & I/O ----
+data:
+  # Root folder for datasets (videos) and extracted frames
+  root: data/ucf_crime
+  frames_dir: data/ucf_crime_frames
+  # If you run on NVR/RTSP only, frames_dir can be a temp folder
+  img_size: [128, 128]
+  batch_size: 64
+  num_workers: 4
+  # frame sampler for videos (used by scripts/extract_frames.py)
+  sampling_fps: 0.05         # ~3 frames/min
+
+# ---- Runtime ----
+runtime:
+  device: cuda                # "cuda" | "cpu"
+  seed: 42
+  save_dir: results
+  log_level: INFO             # DEBUG | INFO | WARNING | ERROR
+
+# ---- Early-exit thresholds (tune these per site) ----
+thresholds:
+  recon_error_tau: 1.5e-3     # autoencoder reconstruction gate
+  cls_accept_tau: 0.54        # embedding-classifier accept threshold
+  yolo_conf: 0.45             # YOLO object confidence threshold
+
+# ---- YOLO module ----
+yolo:
+  enabled: true
+  model: yolov8n.pt           # n/s/m/l/x; pick per GPU
+  imgsz: 640
+  conf: ${thresholds.yolo_conf}
+  iou: 0.45
+  max_det: 50
+  classes: [0]                # detect 'person' only by default; empty = all
+
+# ---- Autoencoder module ----
+autoencoder:
+  enabled: true
+  ckpt: checkpoints/ae_latest.pt
+  epochs: 20
+  lr: 1e-3
+  recon_threshold: ${thresholds.recon_error_tau}
+  loss: l2                    # l1 | l2 | ms-ssim (if implemented)
+
+# ---- VLM module ----
+vlm:
+  enabled: true
+  endpoint: "http://127.0.0.1:8001/infer"   # your local VLM server
+  timeout_s: 20
+  batch_size: 4               # if your server supports batching
+  prompt_template: |
+    Describe any security-relevant events in this frame. Be concise and factual.
+  # Optional: add a "guard prompt" to bias safety-critical cues
+  guard_terms: ["weapon", "smoke", "fire", "balaclava", "hands raised", "collapsed person"]
+
+# ---- Embedding-based text classifier ----
+classifier:
+  encoder: sentence-transformers/all-mpnet-base-v2
+  labelbank: configs/labels.yaml
+  accept_threshold: ${thresholds.cls_accept_tau}
+  # temperature only affects tie-breaking / softmax mapping if you expose probs
+  temperature: 0.1
+
+# ---- Optional DETR pre-filter (experimental) ----
+detr:
+  enabled: false
+  model: "facebook/detr-resnet-50"
+  conf: 0.5
+  classes: ["person"]         # for fast triage before VLM
+
+# ---- Streaming / inputs ----
+inputs:
+  # Use either --input (file) or --rtsp (stream) at runtime.
+  # This section only provides defaults for tooling.
+  file: samples/robbery_01.mp4
+  rtsp: "rtsp://user:pass@ip:554/stream1"
+
+# ---- Outputs ----
+outputs:
+  write_jsonl: true
+  jsonl_path: ${runtime.save_dir}/events.jsonl
+  write_video_annot: false
+  video_out_path: ${runtime.save_dir}/annotated.mp4
+
+# ---- API Server (optional) ----
+server:
+  enabled: false
+  host: 0.0.0.0
+  port: 8000
+
+# ---- Monitoring (optional) ----
+monitoring:
+  redis:
+    enabled: false
+    url: "redis://localhost:6379/0"
+  heartbeat_sec: 10
