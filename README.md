@@ -29,18 +29,6 @@ The system introduces a **multi-stage (cascading) pipeline** that merges classic
 - **Explainable Outputs**  
   Combines visual bounding boxes, textual context, and structured JSON alerts.
 
----
-
-## 📚 Research Background
-
-The project builds on several internal reports and experiments:  
-
-- *Visual Anomaly Detection – Progress Report and Future Roadmap*  
-- *Video Anomaly Detection Update and Progress*  
-- *Embedding-Based Classifier Integration Report*  
-- *VLM Classifier Implementation and Architectural Evaluation*  
-
-Each document is included in the `docs/` folder for transparency and reproducibility.
 
 ---
 
