@@ -1,0 +1,30 @@
+# --- Core deep learning ---
+torch>=2.2.0
+torchvision>=0.17.0
+torchaudio>=2.2.0
+
+# --- Vision / detection ---
+ultralytics>=8.2.0          # YOLOv8
+opencv-python>=4.9.0.80
+pillow>=10.2.0
+
+# --- VLM / NLP ---
+transformers>=4.44.0
+sentence-transformers>=3.0.1
+
+# --- Metrics / analysis ---
+scikit-learn>=1.4.0
+scikit-image>=0.24.0
+lpips>=0.1.4
+matplotlib>=3.8.3
+tqdm>=4.66.2
+
+# --- Config / utils ---
+pyyaml>=6.0.1
+numpy>=1.26.4
+pydantic>=2.7.0
+
+# --- Optional services (turn off if not using) ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+redis>=5.0.4
